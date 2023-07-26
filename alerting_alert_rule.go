@@ -3,7 +3,6 @@ package gapi
 import (
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"time"
 )
 
@@ -65,30 +64,13 @@ type RelativeTimeRange struct {
 
 // AlertRules fetches and returns Grafana alertRules.
 func (c *Client) AlertRules() ([]AlertRule, error) {
-	const limit = 1000
+	var alertRules []AlertRule
 
-	var (
-		page          = 0
-		newAlertRules []AlertRule
-		alertRules    []AlertRule
-		query         = make(url.Values)
-	)
-	query.Set("limit", fmt.Sprint(limit))
-
-	for {
-		page++
-		query.Set("page", fmt.Sprint(page))
-
-		if err := c.request("GET", "/api/v1/provisioning/alert-rules", query, nil, &newAlertRules); err != nil {
-			return nil, err
-		}
-
-		alertRules = append(alertRules, newAlertRules...)
-
-		if len(newAlertRules) < limit {
-			return alertRules, nil
-		}
+	if err := c.request("GET", "/api/v1/provisioning/alert-rules", nil, nil, &alertRules); err != nil {
+		return nil, err
 	}
+
+	return alertRules, nil
 }
 
 // AlertRule fetches a single alert rule, identified by its UID.
